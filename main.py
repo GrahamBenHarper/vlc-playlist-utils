@@ -5,10 +5,13 @@ import os
 
 # grab all files in the path
 rootpath = "/home/user/Music/"
+renamepath = "/storage/0123-4567/Music/"
 albums = os.listdir(rootpath)
 
 # grab all albums in directory
 for album in albums:
+  if album.endswith(".mp3"):
+    continue
   path = rootpath + album
   files = os.listdir(path)
 
@@ -19,9 +22,12 @@ for album in albums:
 
   # grab the tracknum from each track
   for i,file in enumerate(files):
-    f = eyed3.load(filepaths[i])
     if is_song[i]:
-      track_nums[i] = int(f.tag.track_num[0])
+      f = eyed3.load(filepaths[i])
+      if f.tag.track_num[0] != None:
+        track_nums[i] = int(f.tag.track_num[0])
+      else:
+        print(f"No track data available for {filepaths[i]}")
 
   # create a list of indices for walking through tracks in order
   inds = [i[0] for i in sorted(enumerate(track_nums), key=lambda x:x[1])]
@@ -32,7 +38,8 @@ for album in albums:
   print(f'<title>{album}</title>')
   print('<trackList>')
   for i in inds:
-    print(f"<track><location>file://{filepaths[i]}</location></track>")
+    filepathplaylist = filepaths[i].replace(rootpath,renamepath)
+    print(f"<track><location>file://{filepathplaylist}</location></track>")
   print('</trackList>')
   print('</playlist>')
 
