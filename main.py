@@ -1,7 +1,8 @@
 import eyed3
 import os
 
-# print out a VLC playlist format with all tracks in a subdirectory sorted by track number
+# starting from rootpath, print out a VLC playlist format with all tracks in each nested subdirectory
+# the playlist is sorted by track number currently, but gathers other metadata and can sort by other data easily
 
 # grab all files in the path
 rootpath = "/home/user/Music/"
@@ -45,7 +46,6 @@ def create_playlist(dir_name : str, outfile : str):
 
   # print out the VLC playlist file, nameded with the directory
   playlist_name = dir_name.split("/")[-1]
-  return
   f = open(outfile,'w')
   f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
   f.write('<playlist version="1" xmlns="http://xspf.org/ns/0/">\n')
