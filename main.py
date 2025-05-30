@@ -1,18 +1,19 @@
 import eyed3
 import os
 
-# starting from rootpath, print out a VLC playlist format with all tracks in each nested subdirectory
-# the playlist is sorted by track number currently, but gathers other metadata and can sort by other data easily
+# starting from rootpath, create a VLC playlist file with all tracks in each nested subdirectory
+# the playlist is sorted first by album name and then track number currently
 
 # grab all files in the path
 rootpath = "/home/user/Music/"
-renamepath = "/storage/0123-4567/Music/"
+renamepath = ""
 
 def create_playlist(dir_name : str, outfile : str):
   """
   Finds all mp3 files in a full path given by dir_name.
   Then collects the tracknums for each mp3 from the metadata if it is present.
   Then writes out a playlist file to outfile in exactly the format vlc expects.
+  Format documentation located at https://wiki.videolan.org/XSPF/
   """
   # find all mp3s in the current directory, initialize data to 0 or empty
   tracks = [f.name for f in os.scandir(dir_name) if os.path.isfile(f) and f.name.endswith(".mp3")]
@@ -42,7 +43,9 @@ def create_playlist(dir_name : str, outfile : str):
       title_data[i] = str(f.tag.title) 
 
   # create a list of indices for walking through tracks in order
-  inds = [i[0] for i in sorted(enumerate(track_nums), key=lambda x:x[1])]
+  # the order is specified hierarchically by the zip(album_data,track_nums)
+  # meaning it will compare album names first, then compare track numbers
+  inds = [i[0] for i in sorted(enumerate(zip(album_data,track_nums)), key=lambda x:x[1])]
 
   # print out the VLC playlist file, nameded with the directory
   playlist_name = dir_name.split("/")[-1]
@@ -52,8 +55,8 @@ def create_playlist(dir_name : str, outfile : str):
   f.write(f'<title>{playlist_name}</title>\n') # TODO: cleanup use of global vars
   f.write('<trackList>\n')
   for i in inds:
-    filepathplaylist = filepaths[i].replace(rootpath,renamepath) # TODO: cleanup use of global vars
-    f.write(f'<track><location>file://{filepathplaylist}</location></track>\n')
+    filepathplaylist = filepaths[i].replace(rootpath,renamepath).split("/")[-1] # TODO: cleanup use of global vars
+    f.write(f'<track><location>{filepathplaylist}</location></track>\n')
   f.write('</trackList>\n')
   f.write('</playlist>\n')
   f.close()
