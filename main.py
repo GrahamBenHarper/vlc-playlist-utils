@@ -47,9 +47,18 @@ def create_playlist(dir_name : str, outfile : str):
   # meaning it will compare album names first, then compare track numbers
   inds = [i[0] for i in sorted(enumerate(zip(album_data,track_nums)), key=lambda x:x[1])]
 
+  # alternatively, sort by filenames
+  # inds = [i[0] for i in sorted(enumerate(filepaths), key=lambda x:x[1])]
+
   # print out the VLC playlist file, nameded with the directory
   playlist_name = dir_name.split("/")[-1]
-  f = open(outfile,'w')
+
+  # name the file based on the outfile parameter
+  f = open(dir_name + "/" + outfile,'w')
+
+  # alternatively, create a filename based on the directory
+  #f = open(dir_name + "/" + playlist_name.replace(" ","_") + ".xspf",'w')
+
   f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
   f.write('<playlist version="1" xmlns="http://xspf.org/ns/0/">\n')
   f.write(f'<title>{playlist_name}</title>\n') # TODO: cleanup use of global vars
@@ -65,4 +74,6 @@ def create_playlist(dir_name : str, outfile : str):
 dirs = [d[0] for d in os.walk(rootpath)]
 for i,dir_name in enumerate(dirs):
   print(i,dir_name)
-  create_playlist(dir_name, str(i) + ".xspf")
+  playlistfiles = [f.name for f in os.scandir(dir_name) if os.path.isfile(f) and f.name.endswith(".xspf")]
+  if playlistfiles == []:
+    create_playlist(dir_name, str(i) + ".xspf")
