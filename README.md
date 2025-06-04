@@ -6,4 +6,4 @@ pip install eyed3
 ```
 which is also noted in the requirements.txt file.
 
-This currently only supports sorting by track number, but will support more (e.g. hierarchical by artist, album) in the future.
+This supports a few different sorting algorithms, but currently requires modifying source to change them. An argument parser will include these capabilities.
