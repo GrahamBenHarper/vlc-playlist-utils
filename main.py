@@ -1,11 +1,11 @@
 import eyed3
 import os
+import argparse
 
-# starting from rootpath, create a VLC playlist file with all tracks in each nested subdirectory
-# the playlist is sorted first by album name and then track number currently
+# starting from a root directory, walk through all nested subdirectories, and create a VLC playlist file
+# for each subdirectory with all tracks in just the subdirectory.
+# the playlist is sorted first by album name and then track number
 
-# grab all files in the path
-rootpath = "/home/user/Music/"
 renamepath = ""
 
 def create_playlist(dir_name : str, outfile : str):
@@ -69,6 +69,14 @@ def create_playlist(dir_name : str, outfile : str):
   f.write('</trackList>\n')
   f.write('</playlist>\n')
   f.close()
+
+
+parser = argparse.ArgumentParser(prog='create-vlc-playlists',
+                                 description='Create playlists in the specified directory and subdirectories by sorting the tracks according to the sort parameters')
+parser.add_argument("-d", "--directory", default="/home/user/Music", help="The directory where the playlists are created")
+vars = parser.parse_args()
+
+rootpath = vars.directory
 
 # walk over all subdirectories of rootpath and create a playlist for each one
 dirs = [d[0] for d in os.walk(rootpath)]
