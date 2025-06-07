@@ -6,4 +6,9 @@ pip install eyed3
 ```
 which is also noted in the requirements.txt file.
 
-This supports a few different sorting algorithms, but currently requires modifying source to change them. An argument parser will include these capabilities.
+### Usage
+To run this, use
+```
+python main.py -d DIRECTORY -f FIRST_SORT -s SECOND_SORT -t THIRD_SORT
+```
+where `DIRECTORY` is the directory to start from, and the remaining three arguments are the sorting order chosen from the list `["artist","album","tracknum",""]`.
