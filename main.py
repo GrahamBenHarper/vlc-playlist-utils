@@ -4,7 +4,7 @@ import argparse
 
 # starting from a root directory, walk through all nested subdirectories, and create a VLC playlist file
 # for each subdirectory with all tracks in just the subdirectory.
-# the playlist is sorted first by album name and then track number
+# the playlist is sorted by tags according to the input options -s1 -s2 -s3 -s4 in order
 
 renamepath = ""
 
