@@ -9,6 +9,6 @@ which is also noted in the requirements.txt file.
 ### Usage
 To run this, use
 ```
-python main.py -d DIRECTORY -f FIRST_SORT -s SECOND_SORT -t THIRD_SORT
+python main.py -d DIRECTORY -s1 FIRST_SORT -s2 SECOND_SORT -s3 THIRD_SORT -s4 FOURTH_SORT
 ```
-where `DIRECTORY` is the directory to start from, and the remaining three arguments are the sorting order chosen from the list `["artist","album","tracknum",""]`.
+where `DIRECTORY` is the directory to start from, and the remaining three arguments are the sorting order chosen from the list `["artist","album","tracknum","discnum","title","filename",""]`. The default sort order is "artist","album","discnum","tracknum".

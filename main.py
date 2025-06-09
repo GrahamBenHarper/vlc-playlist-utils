@@ -20,14 +20,12 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
   if tracks == []:
     return
   track_nums = [0 for track in tracks]
+  disc_nums = [0 for track in tracks]
   filepaths = [dir_name + "/" + track for track in tracks]
   album_data = ["" for track in tracks]
   artist_data = ["" for track in tracks]
   title_data = ["" for track in tracks]
   empty_data = ["" for track in tracks]
-  
-  #print(tracks)
-  #print(filepaths)
 
   # view the metadata with eyed3 and load all track numbers into track_nums
   for i,track in enumerate(tracks):
@@ -42,15 +40,20 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
       album_data[i] = str(f.tag.album)
     if f.tag.title != None:
       title_data[i] = str(f.tag.title)
+    if f.tag.disc_num[0] != None:
+      disc_nums[i] = int(f.tag.disc_num[0])
 
   # create a list of indices for walking through tracks in order
   # the order is specified hierarchically by the zip(album_data,track_nums)
   # meaning it will compare album names first, then compare track numbers
-  sort_dict = {"artist" : artist_data, "album" : album_data, "tracknum" : track_nums, "" : empty_data}
-  inds = [i[0] for i in sorted(enumerate(zip(sort_dict[sort_order[0]],sort_dict[sort_order[1]],sort_dict[sort_order[2]])), key=lambda x:x[1])]
-
-  # alternatively, sort by filenames
-  # inds = [i[0] for i in sorted(enumerate(filepaths), key=lambda x:x[1])]
+  sort_dict = {"artist" : artist_data, 
+               "album" : album_data,
+               "tracknum" : track_nums,
+               "discnum" : disc_nums,
+               "title" : title_data,
+               "filename" : filepaths,
+               "" : empty_data}
+  inds = [i[0] for i in sorted(enumerate(zip(sort_dict[sort_order[0]],sort_dict[sort_order[1]],sort_dict[sort_order[2]],sort_dict[sort_order[3]])), key=lambda x:x[1])]
 
   # print out the VLC playlist file, nameded with the directory
   playlist_name = dir_name.split("/")[-1]
@@ -75,12 +78,14 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
 
 
 # parse arguments
+valid_sorts = ["artist","album","tracknum","discnum","title","filename",""]
 parser = argparse.ArgumentParser(prog='create-vlc-playlists',
-                                 description='Create playlists in the specified directory and subdirectories by sorting the tracks according to the sort parameters')
+                                 description=f"Create playlists in the specified directory and subdirectories by sorting the tracks according to the sort parameters. Valid sort options are {valid_sorts}.")
 parser.add_argument("-d", "--directory", default="/home/user/Music", help="The directory where the playlists are created")
-parser.add_argument("-f", "--first", default="artist", help="The first criterion to sort by (artist, album, or tracknum)")
-parser.add_argument("-s", "--second", default="album", help="The second criterion to sort by (artist, album, or tracknum)")
-parser.add_argument("-t", "--third", default="tracknum", help="The third criterion to sort by (artist, album, or tracknum)")
+parser.add_argument("-s1", "--first", default="artist", help="The first criterion to sort by")
+parser.add_argument("-s2", "--second", default="album", help="The second criterion to sort by")
+parser.add_argument("-s3", "--third", default="discnum", help="The third criterion to sort by")
+parser.add_argument("-s4", "--fourth", default="tracknum", help="The third criterion to sort by")
 vars = parser.parse_args()
 
 # add some argument checking
@@ -88,7 +93,6 @@ rootpath = vars.directory
 if not os.path.exists(rootpath):
   print(f"Error! Option --directory is not a valid directory, received directory={rootpath}. Exiting...")
   exit(1)
-valid_sorts = ["artist","album","tracknum",""]
 if vars.first not in valid_sorts:
   print(f"Error! Option --first is not one of {valid_sorts}, instead received first={vars.first}. Exiting...")
   exit(1)
@@ -98,6 +102,9 @@ if vars.second not in valid_sorts:
 if vars.third not in valid_sorts:
   print(f"Error! Option --third is not one of {valid_sorts}, instead received third={vars.third}. Exiting...")
   exit(1)
+if vars.fourth not in valid_sorts:
+  print(f"Error! Option --fourth is not one of {valid_sorts}, instead received fourth={vars.fourth}. Exiting...")
+  exit(1)
 
 # walk over all subdirectories of rootpath and create a playlist for each one
 dirs = [d[0] for d in os.walk(rootpath)]
@@ -105,4 +112,4 @@ for i,dir_name in enumerate(dirs):
   print(i,dir_name)
   playlistfiles = [f.name for f in os.scandir(dir_name) if os.path.isfile(f) and f.name.endswith(".xspf")]
   if playlistfiles == []:
-    create_playlist(dir_name, str(i) + ".xspf", [vars.first, vars.second, vars.third])
+    create_playlist(dir_name, str(i) + ".xspf", [vars.first, vars.second, vars.third, vars.fourth])
