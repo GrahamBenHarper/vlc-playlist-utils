@@ -19,6 +19,8 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
   tracks = [f.name for f in os.scandir(dir_name) if os.path.isfile(f) and f.name.endswith(".mp3")]
   if tracks == []:
     return
+
+  # initialize data to blank arrays
   track_nums = [0 for track in tracks]
   disc_nums = [0 for track in tracks]
   filepaths = [dir_name + "/" + track for track in tracks]
@@ -59,11 +61,9 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
   playlist_name = dir_name.split("/")[-1]
 
   # name the file based on the outfile parameter
-  f = open(dir_name + "/" + outfile,'w')
+  f = open(outfile,'w')
 
-  # alternatively, create a filename based on the directory
-  #f = open(dir_name + "/" + playlist_name.replace(" ","_") + ".xspf",'w')
-
+  # write the data
   f.write('<?xml version="1.0" encoding="UTF-8"?>\n')
   f.write('<playlist version="1" xmlns="http://xspf.org/ns/0/">\n')
   f.write(f'<title>{playlist_name}</title>\n') # TODO: cleanup use of global vars
@@ -73,6 +73,8 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
     f.write(f'<track><location>{filepathplaylist}</location></track>\n')
   f.write('</trackList>\n')
   f.write('</playlist>\n')
+
+  # cleanup
   f.close()
 
 
@@ -81,11 +83,12 @@ def create_playlist(dir_name : str, outfile : str, sort_order : list[str]):
 valid_sorts = ["artist","album","tracknum","discnum","title","filename",""]
 parser = argparse.ArgumentParser(prog='create-vlc-playlists',
                                  description=f"Create playlists in the specified directory and subdirectories by sorting the tracks according to the sort parameters. Valid sort options are {valid_sorts}.")
-parser.add_argument("-d", "--directory", default="/home/user/Music", help="The directory where the playlists are created")
+parser.add_argument("-d",  "--directory", default="/home/user/Music", help="The directory where the playlists are created")
 parser.add_argument("-s1", "--first", default="artist", help="The first criterion to sort by")
 parser.add_argument("-s2", "--second", default="album", help="The second criterion to sort by")
 parser.add_argument("-s3", "--third", default="discnum", help="The third criterion to sort by")
-parser.add_argument("-s4", "--fourth", default="tracknum", help="The third criterion to sort by")
+parser.add_argument("-s4", "--fourth", default="tracknum", help="The fourth criterion to sort by")
+parser.add_argument("-p",  "--playlistname", default="number", help="The naming convention for the playlist files that are created (number or directory)")
 vars = parser.parse_args()
 
 # add some argument checking
@@ -105,11 +108,19 @@ if vars.third not in valid_sorts:
 if vars.fourth not in valid_sorts:
   print(f"Error! Option --fourth is not one of {valid_sorts}, instead received fourth={vars.fourth}. Exiting...")
   exit(1)
+valid_playlistnames = ["number","directory"]
+if vars.playlistname not in valid_playlistnames:
+  print(f"Error! Option --playlistname is not one of {valid_playlistnames}, instead received playlistname={vars.playlistname}. Exiting...")
+  exit(1)
 
 # walk over all subdirectories of rootpath and create a playlist for each one
 dirs = [d[0] for d in os.walk(rootpath)]
 for i,dir_name in enumerate(dirs):
   print(i,dir_name)
+  if vars.playlistname == "number":
+    outfile = dir_name + "/" + str(i) + ".xspf"
+  elif vars.playlistname == "directory":
+    outfile = dir_name + "/" + dir_name.split("/")[-1].replace(" ","_") + ".xspf"
   playlistfiles = [f.name for f in os.scandir(dir_name) if os.path.isfile(f) and f.name.endswith(".xspf")]
   if playlistfiles == []:
-    create_playlist(dir_name, str(i) + ".xspf", [vars.first, vars.second, vars.third, vars.fourth])
+    create_playlist(dir_name, outfile, [vars.first, vars.second, vars.third, vars.fourth])
